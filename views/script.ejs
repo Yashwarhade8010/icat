@@ -1,0 +1,56 @@
+<script src="/socket.io/socket.io.js"></script>
+
+<script >
+    const socket = io();
+    const form = document.getElementById("message-form");
+    const inp = document.getElementById('message-input');
+    const ul = document.getElementById("message-container");
+
+    form.addEventListener("submit",(e)=>{
+        e.preventDefault();
+        sendMessage();
+        if(inp.value){
+            socket.emit('chat-message',inp.value);
+            inp.value="";
+        }
+    })
+
+    
+
+    socket.on('total-client',(data)=>{
+        const ct = document.getElementById("client-total");
+        ct.textContent = `Total-Clients: ${data}`
+    })
+
+    function sendMessage(){
+        const data={
+            username:"<%=user.username%>",
+            message : inp.value,
+            time : new Date()
+        }
+        socket.emit("message",data)
+        message(true,data)
+    }
+     
+    socket.on('chat-message',(data)=>{
+        
+        message(false,data)
+    })
+    
+    function message(ownMessage,data){
+        const element = `<li class="${ownMessage ? `message-right`:`message-left`}">
+        
+          <p class="message">
+            ${data.message}
+            <span> ${ownMessage ? "<%= user.username %>": data.username}  ${formatDateFromTimestamp(data.time)}</span>
+          </p>
+        </li>`
+        ul.innerHTML += element;
+    }
+
+    function formatDateFromTimestamp(timestamp) {
+    const date = new Date(timestamp);
+    return date.toLocaleString();
+  }
+    
+</script>
